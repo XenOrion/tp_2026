@@ -10,30 +10,32 @@ int main()
   using nspace::DataStruct;
   std::vector< DataStruct > data;
 
-  // Чтение данных с использованием итераторов потока и алгоритма std::copy
+  // Попытка чтения
   while (!std::cin.eof())
   {
-    if (!std::cin)
+    if (!(std::cin >> std::ws)) break; // Пропуск пробелов
+
+    DataStruct temp;
+    if (std::cin >> temp)
     {
-      std::cin.clear();
-      std::cin.ignore(std::numeric_limits< std::streamsize >::max(), '\n');
+      data.push_back(temp);
     }
-    std::copy(
-      std::istream_iterator< DataStruct >(std::cin),
-      std::istream_iterator< DataStruct >(),
-      std::back_inserter(data)
-    );
+    else
+    {
+      if (std::cin.eof()) break;
+      std::cin.clear();
+      std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    }
   }
 
+  // Сортировка [cite: 6, 10]
   std::sort(data.begin(), data.end());
 
-  // Вывод результатов осуществляется только если вектор не пуст.
   if (!data.empty())
   {
-
     std::copy(
-      std::begin(data),
-      std::end(data),
+      data.begin(),
+      data.end(),
       std::ostream_iterator< DataStruct >(std::cout, "\n")
     );
   }
