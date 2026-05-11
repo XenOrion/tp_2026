@@ -4,7 +4,6 @@
 #include <algorithm>
 #include "data_struct.hpp"
 
-//helper
 static void skipToEndOfRecord(std::istream& in) {
     in.clear();
     char c = '\0';
