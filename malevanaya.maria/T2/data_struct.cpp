@@ -2,11 +2,6 @@
 #include "iofmtguard.hpp"
 #include <iomanip>
 #include <cmath>
-#include <limits>
-
-struct DelimiterIO {
-    char exp;
-};
 
 std::istream& operator>>(std::istream& in, DelimiterIO&& dest) {
     std::istream::sentry sentry(in);
@@ -19,10 +14,6 @@ std::istream& operator>>(std::istream& in, DelimiterIO&& dest) {
     return in;
 }
 
-struct DelimiterNoSkipIO {
-    char exp;
-};
-
 std::istream& operator>>(std::istream& in, DelimiterNoSkipIO&& dest) {
     if (!in) return in;
     char c = '0';
@@ -33,51 +24,85 @@ std::istream& operator>>(std::istream& in, DelimiterNoSkipIO&& dest) {
     return in;
 }
 
+std::istream& operator>>(std::istream& in, LabelIO&& dest) {
+    std::istream::sentry sentry(in);
+    if (!sentry) return in;
+    std::string key;
+    if (!(in >> key)) return in;
+    if (key != dest.exp) {
+        in.setstate(std::ios::failbit);
+    }
+    return in;
+}
+
+std::istream& operator>>(std::istream& in, CharLitIO&& dest) {
+    std::istream::sentry sentry(in);
+    if (!sentry) return in;
+    char c = '0';
+    in >> DelimiterIO{ '\'' };
+    in.get(c);
+    if (!in) return in;
+    dest.ref = c;
+    in >> DelimiterIO{ '\'' };
+    return in;
+}
+
+std::istream& operator>>(std::istream& in, CmpLspIO&& dest) {
+    std::istream::sentry sentry(in);
+    if (!sentry) return in;
+    double r = 0.0, im = 0.0;
+    in >> DelimiterIO{ '#' } >> DelimiterNoSkipIO{ 'c' } >> DelimiterNoSkipIO{ '(' }
+    >> r >> im >> DelimiterIO{ ')' };
+    if (in) {
+        dest.ref = std::complex<double>(r, im);
+    }
+    return in;
+}
+
+std::istream& operator>>(std::istream& in, StringIO&& dest) {
+    std::istream::sentry sentry(in);
+    if (!sentry) return in;
+    return std::getline(in >> DelimiterIO{ '"' }, dest.ref, '"');
+}
+
 std::istream& operator>>(std::istream& in, DataStruct& dest) {
     std::istream::sentry sentry(in);
     if (!sentry) return in;
 
     DataStruct input;
+    bool keys_valid[3]{ false, false, false };
+
     in >> DelimiterIO{ '(' } >> DelimiterIO{ ':' };
 
     for (int i = 0; i < 3; ++i) {
         std::string key;
-        in >> std::ws;
-        char c = '\0';
-        while (in.get(c) && c != ' ' && c != ':' && c != '\n') {
-            key += c;
-        }
-        if (!in || c != ' ') {
-            in.setstate(std::ios::failbit);
-            break;
-        }
+        if (!(in >> key)) break;
 
         if (key == "key1") {
-            in >> DelimiterIO{ '\'' };
-            in.get(c);
-            if (!in) break;
-            input.key1 = c;
-            in >> DelimiterIO{ '\'' } >> DelimiterIO{ ':' };
+            in >> CharLitIO{ input.key1 } >> DelimiterIO{ ':' };
+            if (in) keys_valid[0] = true;
         }
         else if (key == "key2") {
-            double r = 0.0, im = 0.0;
-            in >> DelimiterIO{ '#' } >> DelimiterNoSkipIO{ 'c' } >> DelimiterNoSkipIO{ '(' }
-            >> r >> im >> DelimiterIO{ ')' } >> DelimiterIO{ ':' };
-            input.key2 = std::complex<double>(r, im);
+            in >> CmpLspIO{ input.key2 } >> DelimiterIO{ ':' };
+            if (in) keys_valid[1] = true;
         }
         else if (key == "key3") {
-            in >> DelimiterIO{ '"' };
-            std::getline(in, input.key3, '"');
-            in >> DelimiterIO{ ':' };
+            in >> StringIO{ input.key3 } >> DelimiterIO{ ':' };
+            if (in) keys_valid[2] = true;
         }
         else {
             in.setstate(std::ios::failbit);
+            break;
         }
     }
+
     in >> DelimiterIO{ ')' };
 
-    if (in) {
+    if (in && keys_valid[0] && keys_valid[1] && keys_valid[2]) {
         dest = input;
+    }
+    else if (in) {
+        in.setstate(std::ios::failbit);
     }
     return in;
 }

@@ -2,32 +2,24 @@
 #include <vector>
 #include <iterator>
 #include <algorithm>
+#include <limits>
 #include "data_struct.hpp"
-
-static void skipToEndOfRecord(std::istream& in) {
-    in.clear();
-    char c = '\0';
-    while (in.get(c)) {
-        if (c == ':') {
-            char next = '\0';
-            if (in.get(next)) {
-                if (next == ')') return;
-                in.putback(next);
-            }
-        }
-    }
-}
 
 int main() {
     std::vector<DataStruct> data;
-    DataStruct ds;
+
     while (!std::cin.eof()) {
-        if (std::cin >> ds) {
-            data.push_back(ds);
+        if (!std::cin) {
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            continue;
         }
-        else if (!std::cin.eof()) {
-            skipToEndOfRecord(std::cin);
-        }
+
+        std::copy(
+            std::istream_iterator<DataStruct>(std::cin),
+            std::istream_iterator<DataStruct>(),
+            std::back_inserter(data)
+        );
     }
 
     std::sort(data.begin(), data.end(), compareDataStruct);
