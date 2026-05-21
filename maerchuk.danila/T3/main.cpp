@@ -181,17 +181,22 @@ bool parsePolygonLine(const std::string& line, Polygon& poly)
     return true;
 }
 
-bool parsePolygonFromStream(std::istream& is, Polygon& poly)
+bool parsePolygonFromString(const std::string& str, Polygon& poly)
 {
+    std::stringstream ss(str);
     size_t num_vertices;
-    if (!(is >> num_vertices)) return false;
+    if (!(ss >> num_vertices)) return false;
     if (num_vertices < 3) return false;
 
     poly.points.resize(num_vertices);
     for (size_t i = 0; i < num_vertices; ++i) {
         std::string token;
-        if (!(is >> token) || !parsePoint(token, poly.points[i])) return false;
+        if (!(ss >> token) || !parsePoint(token, poly.points[i])) return false;
     }
+
+    std::string extra;
+    if (ss >> extra) return false;
+
     return true;
 }
 
@@ -314,11 +319,12 @@ void handleRects(const std::vector<Polygon>& polygons)
 
 void handleIntersections(const std::vector<Polygon>& polygons, std::istream& is)
 {
+    std::string line_remainder;
+    std::getline(is, line_remainder);
+
     Polygon target;
-    if (!parsePolygonFromStream(is, target)) {
+    if (!parsePolygonFromString(line_remainder, target)) {
         std::cout << "<INVALID COMMAND>\n";
-        std::string dummy;
-        std::getline(is, dummy);
         return;
     }
 
