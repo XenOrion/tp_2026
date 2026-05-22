@@ -41,7 +41,7 @@ namespace Commands
             double sum = std::accumulate(polygons.cbegin(), polygons.cend(), 0.0,
                                          [&index, target_even](double acc, const Polygon &p)
                                          {
-                                             bool is_even_index = (index % 2 != 0);
+                                             bool is_even_index = (index % 2 == 0);
                                              bool is_target_index = (is_even_index == target_even);
                                              index++;
                                              return acc + (is_target_index ? Geometry::get_area(p) : 0.0);
