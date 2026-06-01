@@ -27,7 +27,8 @@ std::vector<std::string> ShortestPathResult::reconstructPath(const std::string& 
 }
 
 // 1. Алгоритм DIJKSTRA
-ShortestPathResult GraphAlgorithms::dijkstra(const DirectedWeightedGraph& graph, const std::string& start_id) {
+ShortestPathResult GraphAlgorithms::dijkstra(const DirectedWeightedGraph& graph,
+    const std::string& start_id) {
     if (!graph.hasVertex(start_id)) {
         throw VertexNotFoundException("Start vertex for Dijkstra not found: " + start_id);
     }
@@ -45,8 +46,9 @@ ShortestPathResult GraphAlgorithms::dijkstra(const DirectedWeightedGraph& graph,
     for (const auto& u : vertices) {
         for (const auto& edge : graph.getNeighbors(u)) {
             if (edge.weight < 0.0) {
-                throw NegativeWeightException("Dijkstra cannot process negative weights. Found edge to "
-                               + edge.target_id + " with weight " + std::to_string(edge.weight));
+                throw NegativeWeightException(
+                    "Dijkstra cannot process negative weights. Found edge to "
+                    + edge.target_id + " with weight " + std::to_string(edge.weight));
             }
         }
     }
@@ -81,7 +83,8 @@ ShortestPathResult GraphAlgorithms::dijkstra(const DirectedWeightedGraph& graph,
 }
 
 // 2. Алгоритм BELLMAN-FORD
-ShortestPathResult GraphAlgorithms::bellmanFord(const DirectedWeightedGraph& graph, const std::string& start_id) {
+ShortestPathResult GraphAlgorithms::bellmanFord(const DirectedWeightedGraph& graph,
+    const std::string& start_id) {
     if (!graph.hasVertex(start_id)) {
         throw VertexNotFoundException("Start vertex for Bellman-Ford not found: " + start_id);
     }
@@ -123,7 +126,8 @@ ShortestPathResult GraphAlgorithms::bellmanFord(const DirectedWeightedGraph& gra
             double weight = edge.weight;
 
             if (result.distances[u] + weight < result.distances[v]) {
-                throw NegativeCycleException("Graph contains a negative weight cycle reachable from " + start_id);
+                throw NegativeCycleException(
+                    "Graph contains a negative weight cycle reachable from " + start_id);
             }
         }
     }
