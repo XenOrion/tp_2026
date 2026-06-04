@@ -20,14 +20,16 @@ namespace asik
     return in;
   }
 
-  std::istream& operator>>(std::istream& in, DoubleIO&& dest)
+  std::istream& operator>>(std::istream& in, RatLspIO&& dest)
   {
     std::istream::sentry sentry(in);
     if (!sentry)
     {
       return in;
     }
-    return in >> dest.ref >> DelimiterIO{ 'd' };
+    //(:N -1:D 5:):
+    return in >> DelimiterIO{ '(' } >> DelimiterIO{ ':' } >> DelimiterIO{ 'N' } >> DelimiterIO{ ' ' }
+              >> DelimiterIO{ '(' } dest.ref.first >> DelimiterIO{ 'd' };
   }
 
   std::istream& operator>>(std::istream& in, StringIO&& dest)
@@ -69,7 +71,7 @@ namespace asik
     std::string key_current;
     {
       using sep = DelimiterIO;
-      using dbl = DoubleIO;
+      using dbl = RatLspIO;
       using str = StringIO;
       in >> sep{ '{' };
       for (std::size_t i = 0; i < keys_valid_size ; ++i)
@@ -89,7 +91,7 @@ namespace asik
         }
         else if (in && key_current == "key2")
         {
-          in >> sep{ ':' } >> str{ input.key2 };
+          in >> sep{ ':' } >> str{ input.key3 };
           if (i != keys_valid_last)
           {
             in >> sep{ ',' };
@@ -124,7 +126,7 @@ namespace asik
     }
     else
     {
-      return key2.size() < other.key2.size();
+      return key2 < other.key2;
     }
   }
 

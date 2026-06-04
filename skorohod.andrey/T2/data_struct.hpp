@@ -5,8 +5,6 @@
 
 namespace asik
 {
-  // формат ввода:
-  // { "key1": 1.0d, "key2": "Let madness release you" }
   struct DataStruct
   {
     std::pair<long long, unsigned long long> key1;
@@ -20,9 +18,9 @@ namespace asik
     char exp;
   };
 
-  struct DoubleIO
+  struct RatLspIO
   {
-    double& ref;
+    std::pair<long long, unsigned long long>& ref;
   };
 
   struct StringIO
@@ -36,7 +34,7 @@ namespace asik
   };
 
   std::istream& operator>>(std::istream& in, DelimiterIO&& dest);
-  std::istream& operator>>(std::istream& in, DoubleIO&& dest);
+  std::istream& operator>>(std::istream& in, RatLspIO&& dest);
   std::istream& operator>>(std::istream& in, StringIO&& dest);
   std::istream& operator>>(std::istream& in, LabelIO&& dest);
   std::istream& operator>>(std::istream& in, DataStruct& dest);
