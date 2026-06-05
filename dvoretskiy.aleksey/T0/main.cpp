@@ -2,7 +2,7 @@ include < iostream>
 int main()
 {
 
-	std::cout << “lastname.firstname” << ‘\n’;
+	std::cout << â€œdvoretskiy.alekseyâ€ << â€˜\nâ€™;
 	return 0;
 
 }
