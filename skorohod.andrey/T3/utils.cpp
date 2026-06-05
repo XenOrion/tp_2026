@@ -35,6 +35,7 @@ bool parsePolygon(std::istream& is, Polygon& out)
 {
     int vertexCount;
     if (!(is >> vertexCount)) return false;
+    if(vertexCount < 3) return false;
     Polygon poly;
     for (int i = 0; i < vertexCount; ++i)
     {
@@ -46,7 +47,8 @@ bool parsePolygon(std::istream& is, Polygon& out)
         }
         poly.points.push_back({x, y});
     }
-    if (poly.points.size() != static_cast<std::size_t>(vertexCount)) return false;
+    is >> std::ws;
+    if (is.peek() != EOF || poly.points.size() != static_cast<std::size_t>(vertexCount)) return false;
     out = std::move(poly);
     return true;
 }
@@ -155,10 +157,13 @@ void cmdArea(const std::vector<Polygon>& data, std::istream& is, std::ostream& o
         os << areaMean(data) << '\n';
     } else if (isUnsignedNumber(param)) {
         std::size_t num = std::stoul(param);
-        setupIomanip(os);
         std::size_t area = areaNum(data, num);
         if (area == 0) os << "<INVALID COMMAND>\n";
-        else os << area << '\n';
+        else
+        {
+            setupIomanip(os);
+            os << area << '\n';
+        }
     } else {
         os << "<INVALID COMMAND>\n";
     }
