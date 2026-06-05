@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <iterator>
 #include <limits>
+#include <map>
 #include <numeric>
 #include <sstream>
 #include <stdexcept>
@@ -348,6 +349,80 @@ namespace
         polygons.end(),
         std::bind(hasVertexCount, std::placeholders::_1, count)) << '\n';
   }
+
+  using CommandHandler = std::function<
+      void(
+          std::istringstream&,
+          std::vector< Polygon >&,
+          std::ostream&)>;
+
+  using CommandMap = std::map< std::string, CommandHandler >;
+
+  const CommandMap& getCommandMap()
+  {
+    static const CommandMap commands{
+      {
+        "AREA",
+        [](std::istringstream& input,
+            std::vector< Polygon >& polygons,
+            std::ostream& output)
+        {
+          executeArea(input, polygons, output);
+        }
+      },
+      {
+        "MAX",
+        [](std::istringstream& input,
+            std::vector< Polygon >& polygons,
+            std::ostream& output)
+        {
+          executeMax(input, polygons, output);
+        }
+      },
+      {
+        "MIN",
+        [](std::istringstream& input,
+            std::vector< Polygon >& polygons,
+            std::ostream& output)
+        {
+          executeMin(input, polygons, output);
+        }
+      },
+      {
+        "COUNT",
+        [](std::istringstream& input,
+            std::vector< Polygon >& polygons,
+            std::ostream& output)
+        {
+          executeCount(input, polygons, output);
+        }
+      },
+      {
+        "RMECHO",
+        [](std::istringstream& input,
+            std::vector< Polygon >& polygons,
+            std::ostream& output)
+        {
+          const Polygon polygon = parseCommandPolygon(input);
+          output << removeEchoes(polygons, polygon) << '\n';
+        }
+      },
+      {
+        "INFRAME",
+        [](std::istringstream& input,
+            std::vector< Polygon >& polygons,
+            std::ostream& output)
+        {
+          const Polygon polygon = parseCommandPolygon(input);
+          output << (isInFrame(polygons, polygon)
+              ? "<TRUE>\n"
+              : "<FALSE>\n");
+        }
+      }
+    };
+
+    return commands;
+  }
 }
 
 bool operator==(const Point& lhs, const Point& rhs)
@@ -596,36 +671,7 @@ void executeCommand(
       throw std::invalid_argument("empty command");
     }
 
-    if (name == "AREA")
-    {
-      executeArea(input, polygons, output);
-    }
-    else if (name == "MAX")
-    {
-      executeMax(input, polygons, output);
-    }
-    else if (name == "MIN")
-    {
-      executeMin(input, polygons, output);
-    }
-    else if (name == "COUNT")
-    {
-      executeCount(input, polygons, output);
-    }
-    else if (name == "RMECHO")
-    {
-      output << removeEchoes(polygons, parseCommandPolygon(input)) << '\n';
-    }
-    else if (name == "INFRAME")
-    {
-      output << (isInFrame(polygons, parseCommandPolygon(input))
-          ? "<TRUE>\n"
-          : "<FALSE>\n");
-    }
-    else
-    {
-      throw std::invalid_argument("unknown command");
-    }
+    getCommandMap().at(name)(input, polygons, output);
   }
   catch (const std::exception&)
   {
