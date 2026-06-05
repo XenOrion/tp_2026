@@ -156,7 +156,9 @@ void cmdArea(const std::vector<Polygon>& data, std::istream& is, std::ostream& o
     } else if (isUnsignedNumber(param)) {
         std::size_t num = std::stoul(param);
         setupIomanip(os);
-        os << areaNum(data, num) << '\n';
+        std::size_t area = areaNum(data, num);
+        if (area == 0) os << "<INVALID COMMAND>\n";
+        os << area << '\n';
     } else {
         os << "<INVALID COMMAND>\n";
     }
@@ -212,7 +214,9 @@ void cmdCount(const std::vector<Polygon>& data, std::istream& is, std::ostream& 
         os << countEvenOdd(data, true) << '\n';
     } else if (isUnsignedNumber(param)) {
         std::size_t num = std::stoul(param);
-        os << countNum(data, num) << '\n';
+        std::size_t count = countNum(data, num);
+        if (count == 0) os << "<INVALID COMMAND>\n";
+        os << count << '\n';
     } else {
         os << "<INVALID COMMAND>\n";
     }
