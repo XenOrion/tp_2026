@@ -1,5 +1,7 @@
 #include "commands.hpp"
 
+#include <map>
+#include <functional>
 #include <iostream>
 #include <sstream>
 #include <algorithm>
@@ -307,19 +309,38 @@ void handleCommand(std::vector<Polygon> &polygons, const std::string &line) {
         return;
     }
 
-    if (command == "AREA") {
+    std::map<std::string, std::function<void()> > commands;
+
+    commands["AREA"] = [&polygons, &in]() {
         handleArea(polygons, in);
-    } else if (command == "MAX") {
+    };
+
+    commands["MAX"] = [&polygons, &in]() {
         handleMax(polygons, in);
-    } else if (command == "MIN") {
+    };
+
+    commands["MIN"] = [&polygons, &in]() {
         handleMin(polygons, in);
-    } else if (command == "COUNT") {
+    };
+
+    commands["COUNT"] = [&polygons, &in]() {
         handleCount(polygons, in);
-    } else if (command == "ECHO") {
+    };
+
+    commands["ECHO"] = [&polygons, &in]() {
         handleEcho(polygons, in);
-    } else if (command == "MAXSEQ") {
+    };
+
+    commands["MAXSEQ"] = [&polygons, &in]() {
         handleMaxSeq(polygons, in);
-    } else {
+    };
+
+    auto iterator = commands.find(command);
+
+    if (iterator == commands.end()) {
         printInvalidCommand();
+        return;
     }
+
+    iterator->second();
 }
